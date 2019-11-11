@@ -3,25 +3,46 @@
 #include <vector>
 #include <iostream>
 #include <sys/socket.h>
+#include "Utilities.hpp"
 
-#define M 63
+#define m 64
+#define r 1
+
+class FingerTableEntry {
+private:
+    // IP address of the finger table entry
+    std::string ipAddress;
+    // portNumber of finger table entry
+    int portNumber;
+    // Node identifier of finger table entry
+    ulli nodeIdentifier;
+public:
+    // Constructor
+    FingerTableEntry(std::string ipAddress, int portNumber, ulli nodeIdentifier);
+    // Fetch IP address
+    std::string getIPAddress();
+    // Fetch port number
+    int getPortNumber();
+    // Fetch node identifier
+    ulli getNodeIdentifier();
+};
 
 class ChordNode {
-
-    private:
-
-    std::string IPaddress;
+private:
+    // IP Address of current node
+    std::string ipAddress;
+    // Port number of current node
     int portNumber;
-    
-    std::string nodeIdentifier;     // Obtained using SHA-1        // ISSUE: Make virtual servers or not?
-    std::unordered_map<std::string, std::string> keysManaged;    // < keyID, actual key > 
-
-    std::string chordRingID;
-
-    // Each 'subvector' will contain 3 values: (nodeIdentifier, IP, port)
-    std::vector<std::vector<std::string>> fingerTable;      // TODO: SET MAXIMUM ENTRIES TO M
-    std::vector<std::vector<std::string>> successorList;
-    std::vector<std::string> predecessor;
+    // Obtained using SHA-1. Identifies the node in the chord
+    ulli nodeIdentifier;
+    // Stores the key value pair in the current node
+    std::unordered_map<ulli, std::string> hashTable;
+    // Finger table of current node // Maximum of m entries
+    std::vector<FingerTableEntry *> fingerTable;
+    // Successor list of current node // Required for failure handling // Maximum of r entries
+    std::vector<FingerTableEntry *> successorList;
+    // Predecessor of current node
+    FingerTableEntry * predecessor;
 
     public:
 
@@ -31,15 +52,15 @@ class ChordNode {
     RUN PERIODICALLY: stabilize(), checkPredecessor(), fixFingers()
     */
 
-    ChordNode()
-    {
-        // create nodeIdentifier's value by calling calculateSHA1() here
-    }
+    ChordNode();
+    // create nodeIdentifier's value by calling calculateSHA1() here
 
     // NOTE: May have to change return data types wherever required
 
+    // creates a chord ring with one node only
     void create();
 
+    // 
     void join(std::string nodeID);
 
     std::string findSuccessor(std::string ID);  // Of a key's ID

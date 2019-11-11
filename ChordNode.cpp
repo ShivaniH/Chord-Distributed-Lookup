@@ -2,6 +2,32 @@
 
 using namespace std;
 
+// FingerTableEntry methods
+FingerTableEntry::FingerTableEntry(std::string ipAddress, int portNumber, ulli nodeIdentifier) {
+    // Initialize the object
+    this->ipAddress = ipAddress;
+    this->portNumber = portNumber;
+    this->nodeIdentifier = nodeIdentifier;
+}
+
+std::string FingerTableEntry::getIPAddress() {
+    // Fetch the ip address
+    return this->ipAddress;
+}
+
+int FingerTableEntry::getPortNumber() {
+    // Fetch the port number
+    return this->portNumber;
+}
+
+ulli FingerTableEntry::getNodeIdentifier() {
+    // Fetch the node identifier
+    return this->nodeIdentifier;
+}
+
+ChordNode::ChordNode() {
+
+}
 
 void ChordNode::create()
 {
