@@ -5,20 +5,18 @@ using namespace std;
 // SHA1 utilities
 
 // Calculates the node and key identifier truncated to sizeof(ulli)
-ulli calculateIdentifier(std::string input)
-{
+ulli calculateIdentifier(std::string input) {
     ulli result = 0;
     unsigned char hash[SHA_DIGEST_LENGTH];
     SHA1((const unsigned char *)input.c_str(), input.size(), hash);
-    memcpy(&result, hash, sizeof(ulli));
+    memcpy(&result, hash, m/8);
     return result;
 }
 
 // Network utilities
 
 // sends buffer data of size sendLength using sendersSocket
-void sendData(char *buffer, long long int sendLength, int sendersSocket)
-{
+void sendData(char *buffer, long long int sendLength, int sendersSocket) {
     char * ptrToBuffer = buffer;
 
     // Send the number of bytes to be sent
@@ -36,8 +34,7 @@ void sendData(char *buffer, long long int sendLength, int sendersSocket)
 }
 
 // receives data of size bufferSize from receiversSocket // return the data
-char* receiveData(long long int& bufferSize, int receiversSocket)
-{
+char* receiveData(long long int& bufferSize, int receiversSocket) {
     // Receive total bytes to be received
     if(recv(receiversSocket, &bufferSize, sizeof(long long int), 0) == -1) { perror("Error receiving file size"); exit(1); }
     char * bufferStorage = (char*)calloc(bufferSize, sizeof(char));

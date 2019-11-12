@@ -1,9 +1,9 @@
 CXX = g++
 
-default: ChordNode
+default: ChordClient
 
-ChordNode: ChordClient.o ChordNode.o Utilities.o
-	$(CXX) -g -o ChordNode ChordClient.o ChordNode.o Utilities.o -lcrypto -lssl
+ChordClient: ChordClient.o ChordNode.o Utilities.o
+	$(CXX) -g -o ChordClient ChordClient.o ChordNode.o Utilities.o -lcrypto -lssl
 
 Utilities.o: Utilities.cpp Utilities.hpp
 	$(CXX) -g -c Utilities.cpp

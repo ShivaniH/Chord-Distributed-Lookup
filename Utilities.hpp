@@ -3,6 +3,9 @@
 #include <cstring>
 #include <sys/socket.h>
 
+// Extract 64 bits from SHA1
+#define m 64
+
 #define ulli unsigned long long int
 
 // SHA1 utilities
