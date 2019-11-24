@@ -49,9 +49,6 @@ int main(int argc, char** argv) {
         } else if(command.find("join_chord") != string::npos) {
             vector<string> result;
             boost::split(result, command, boost::is_any_of(" "));
-            // for(string i:result){
-            //     cout << i << "\n";
-            // }
 
             if(result.size() != 3) { perror("Error the required parameters are join_chord <ip address> <port number>\n"); exit(0); }
 
@@ -66,8 +63,11 @@ int main(int argc, char** argv) {
             server_details.sin_port = htons(stoi(result[2]));
             server_details.sin_addr.s_addr = inet_addr(result[1].c_str());
 
+            command = "join_chord " + c->ipAddress + " " + to_string(c->portNumber);
+
             if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer"); pthread_exit(NULL); }
             sendData((char *)command.c_str(), command.size(), socket_fd);
+            
         } else if(command.find("display_finger_table") != string::npos) {
             c->displayFingerTable();
         } else if(command.find("display_hash_table") != string::npos) {
