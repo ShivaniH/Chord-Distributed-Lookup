@@ -75,6 +75,22 @@ public:
     // Creates a chord ring with one node only
     void create();
 
+    // 
+    void join(std::string nodeID);
+
+    std::string findSuccessor(std::string ID);  // Of a key's ID
+
+    std::string closestPrecedingNode(std::string ID);
+
+    void checkPredecessor();
+
+    void fixFingers();
+
+    void stabilize();
+
+    void notify(std::string nodeID);
+
+
     // Display the finger table
     void displayFingerTable();
 
@@ -90,18 +106,4 @@ public:
     // Display predecessor
     void displayPredecessor();
 
-    // 
-    void join(std::string nodeID);
-
-    std::string findSuccessor(std::string ID);  // Of a key's ID
-
-    std::string closestPrecedingNode(std::string ID);
-
-    void checkPredecessor();
-
-    void fixFingers();
-
-    void stabilize();
-
-    void notify(std::string nodeID);
 };
