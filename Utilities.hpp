@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <climits>
 #include <pthread.h>
+#include <boost/algorithm/string.hpp>
 
 // Extract 64 bits from SHA1
 #define m 8

@@ -140,19 +140,21 @@ void ChordNode::join(FingerTableEntry * fte) {
     string command;
 
     if(result.second) {
-        command = "change_predecessor " + fte->getIPAddress() + ":" + to_string(fte->getPortNumber()) + " " + to_string(fte->getNodeIdentifier());
+        command = "change_predecessor " + fte->getIPAddress() + " " + to_string(fte->getPortNumber()) + " " + to_string(fte->getNodeIdentifier());
     } else {
-        command = "join_chord " + fte->getIPAddress() + ":" + to_string(fte->getPortNumber()) + " " + to_string(fte->getNodeIdentifier());
+        command = "join_chord " + fte->getIPAddress() + " " + to_string(fte->getPortNumber()) + " " + to_string(fte->getNodeIdentifier());
     }
 
-    long long int command_size = command.size();
-    if(send(socket_fd, &command_size, sizeof(long long int), 0) == -1) { perror("Error sending command size to peer"); pthread_exit(NULL); }
-	if(send(socket_fd, command.c_str(), command_size, 0) == -1) { perror("Error sending command to peer"); pthread_exit(NULL); }
+    // PKB
+    // long long int command_size = command.size();
+    // if(send(socket_fd, &command_size, sizeof(long long int), 0) == -1) { perror("Error sending command size to peer"); pthread_exit(NULL); }
+	// if(send(socket_fd, command.c_str(), command_size, 0) == -1) { perror("Error sending command to peer"); pthread_exit(NULL); }
+
+    sendData((char *)command.c_str(), command.size(), socket_fd);
 }
 
 
-pair<FingerTableEntry *, bool> ChordNode::findSuccessor(ulli id)
-{
+pair<FingerTableEntry *, bool> ChordNode::findSuccessor(ulli id) {
     // Finding successor of id
     if(id <= *this->nodeIdentifier) {
         id = id + pow(2, m);
@@ -210,6 +212,13 @@ void ChordNode::notify(string nodeID)
 }
 
 // Threads
+struct thread_arguments_structure {
+	char command[256]; ChordNode* c; int dataTransferFD;
+};
+
+void* interpretCommand(void* thread_arguments) {
+
+}
 
 // Listening port
 void* startListeningPort(void* thread_arguments) {
@@ -237,17 +246,29 @@ void* startListeningPort(void* thread_arguments) {
         data_transfer_fd = accept(socket_fd, (struct sockaddr *) &client_details, &sockaddr_struct_length);
         if(data_transfer_fd == -1) { perror("Error accepting"); pthread_exit(NULL); }
 
-        if(recv(data_transfer_fd, &command_size, sizeof(long long int), 0) == -1) { perror("Error receiving command size"); pthread_exit(NULL); }
+        // PKB
+        // if(recv(data_transfer_fd, &command_size, sizeof(long long int), 0) == -1) { perror("Error receiving command size"); pthread_exit(NULL); }
 
-        command = "";
-		while(command_size > 0 && (number_of_characters = recv(data_transfer_fd, buffer, minAmong(command_size, 256), 0)) > 0) {
-			command.append(buffer);
-			command_size -= number_of_characters;
-			bzero(buffer, 256);
-		}
+        // command = "";
+		// while(command_size > 0 && (number_of_characters = recv(data_transfer_fd, buffer, minAmong(command_size, 256), 0)) > 0) {
+		// 	command.append(buffer);
+		// 	command_size -= number_of_characters;
+		// 	bzero(buffer, 256);
+		// }
 
-        if(number_of_characters == -1) { perror("Error receiving command"); pthread_exit(NULL); }
+        // if(number_of_characters == -1) { perror("Error receiving command"); pthread_exit(NULL); }
 
-        
+        long long int receiver_size;
+        string command(receiveData(receiver_size, data_transfer_fd));
+
+        cout << "Command Received: " << command << "\n";
+
+        pthread_t interpret_command_thread;
+        struct thread_arguments_structure * send_chunk_thread_arg = (struct thread_arguments_structure *)malloc(sizeof(struct thread_arguments_structure));
+        send_chunk_thread_arg->dataTransferFD = data_transfer_fd;
+        strcpy(send_chunk_thread_arg->command, command.c_str());
+        send_chunk_thread_arg->c = (ChordNode *)thread_arguments;
+		if(pthread_create(&interpret_command_thread, NULL, interpretCommand, (void *) send_chunk_thread_arg)) { perror("Error creating interpret command thread"); pthread_exit(NULL); }
+		pthread_detach(interpret_command_thread);
     }
 }
