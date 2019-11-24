@@ -217,7 +217,7 @@ struct thread_arguments_structure {
 };
 
 void* interpretCommand(void* thread_arguments) {
-
+    char * command = ((struct thread_arguments_structure *) thread_arguments)->command;
 }
 
 // Listening port
@@ -246,22 +246,10 @@ void* startListeningPort(void* thread_arguments) {
         data_transfer_fd = accept(socket_fd, (struct sockaddr *) &client_details, &sockaddr_struct_length);
         if(data_transfer_fd == -1) { perror("Error accepting"); pthread_exit(NULL); }
 
-        // PKB
-        // if(recv(data_transfer_fd, &command_size, sizeof(long long int), 0) == -1) { perror("Error receiving command size"); pthread_exit(NULL); }
-
-        // command = "";
-		// while(command_size > 0 && (number_of_characters = recv(data_transfer_fd, buffer, minAmong(command_size, 256), 0)) > 0) {
-		// 	command.append(buffer);
-		// 	command_size -= number_of_characters;
-		// 	bzero(buffer, 256);
-		// }
-
-        // if(number_of_characters == -1) { perror("Error receiving command"); pthread_exit(NULL); }
-
         long long int receiver_size;
         string command(receiveData(receiver_size, data_transfer_fd));
 
-        cout << "Command Received: " << command << "\n";
+        // cout << "Command Received: " << command << "\n";
 
         pthread_t interpret_command_thread;
         struct thread_arguments_structure * send_chunk_thread_arg = (struct thread_arguments_structure *)malloc(sizeof(struct thread_arguments_structure));
