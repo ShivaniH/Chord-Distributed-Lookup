@@ -48,8 +48,6 @@ class ChordNode {
     */
 
 private:
-    // IP Address of current node
-    std::string ipAddress;
     
     // Obtained using SHA-1. Identifies the node in the chord
     ulli * nodeIdentifier;
@@ -74,7 +72,10 @@ private:
 public:
     // Port number of current node
     int portNumber;
-    
+
+    // IP Address of current node
+    std::string ipAddress;
+
     // Initialize the objects
     ChordNode(std::string ipAddress, int portNumber);
 
