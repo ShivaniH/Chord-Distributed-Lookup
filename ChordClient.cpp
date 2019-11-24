@@ -1,5 +1,6 @@
 #include "ChordNode.hpp"
 #include <fstream>
+
 using namespace std;
 
 int main(int argc, char** argv) {
@@ -35,8 +36,12 @@ int main(int argc, char** argv) {
 
     cout << "Your network details: IP Address = " << ip_addresses[1] << " and Port number = " << argv[1] << "\n";
 
-    
-    
+    // Listening thread
+    pthread_t listening_thread;
+	ChordNode* listening_thread_arg = (ChordNode*) malloc(sizeof(ChordNode));
+	if(pthread_create(&listening_thread, NULL, startListeningPort, (void *) listening_thread_arg)) { perror("Error creating listening thread"); exit(0); }
+	pthread_detach(listening_thread);
+
     while (true) {
         cin >> command;
         if(command.find("create_chord") != string::npos) {

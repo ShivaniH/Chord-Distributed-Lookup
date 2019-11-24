@@ -2,6 +2,13 @@
 
 using namespace std;
 
+// Useful utilities
+
+// Calculates the minimum among x and y
+long long int minAmong(long long int x, long long int y) {
+	return x<y?x:y;
+}
+
 // SHA1 utilities
 
 // Calculates the node and key identifier truncated to sizeof(ulli)
@@ -54,4 +61,3 @@ char* receiveData(long long int& bufferSize, int receiversSocket) {
     return buffer;
 }
 
-// Threads

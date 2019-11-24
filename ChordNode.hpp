@@ -1,14 +1,11 @@
 #include <unordered_map>
 #include <vector>
 #include <iostream>
-#include <sys/socket.h>
 #include "Utilities.hpp"
 #include <cmath>
-#include <netinet/in.h>
-#include <sys/types.h>
-#include <arpa/inet.h>
 
 #define r 1
+
 
 class FingerTableEntry {
 private:
@@ -54,9 +51,6 @@ private:
     // IP Address of current node
     std::string ipAddress;
     
-    // Port number of current node
-    int portNumber;
-    
     // Obtained using SHA-1. Identifies the node in the chord
     ulli * nodeIdentifier;
     
@@ -78,6 +72,9 @@ private:
     // Finding successor of id
     std::pair<FingerTableEntry *, bool>  findSuccessor(ulli id);
 public:
+    // Port number of current node
+    int portNumber;
+    
     // Initialize the objects
     ChordNode(std::string ipAddress, int portNumber);
 
@@ -110,3 +107,8 @@ public:
 
     void notify(std::string nodeID);
 };
+
+// Threads
+
+// Listening port
+void* startListeningPort(void* thread_arguments);

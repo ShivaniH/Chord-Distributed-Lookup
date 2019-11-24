@@ -208,3 +208,46 @@ void ChordNode::notify(string nodeID)
 {
 
 }
+
+// Threads
+
+// Listening port
+void* startListeningPort(void* thread_arguments) {
+    int socket_fd, data_transfer_fd, port_number = ((ChordNode *)thread_arguments)->portNumber, number_of_characters;
+	unsigned int sockaddr_struct_length; long long int command_size; string command; char buffer[256]; bzero(buffer, 256);
+
+    do{
+		socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+		if (socket_fd == -1) perror("Error opening socket");
+	} while (socket_fd == -1);
+
+
+	struct sockaddr_in server_details, client_details;
+	bzero((char *) &server_details, sizeof(server_details));
+	server_details.sin_family = AF_INET;
+	server_details.sin_addr.s_addr = INADDR_ANY;
+	server_details.sin_port = htons(port_number);
+
+	if (bind(socket_fd, (struct sockaddr *) &server_details, sizeof(server_details)) == -1) { perror("Error binding"); pthread_exit(NULL); }
+
+    listen(socket_fd, INT_MAX);
+	sockaddr_struct_length = sizeof(struct sockaddr_in);
+
+    while(1) {
+        data_transfer_fd = accept(socket_fd, (struct sockaddr *) &client_details, &sockaddr_struct_length);
+        if(data_transfer_fd == -1) { perror("Error accepting"); pthread_exit(NULL); }
+
+        if(recv(data_transfer_fd, &command_size, sizeof(long long int), 0) == -1) { perror("Error receiving command size"); pthread_exit(NULL); }
+
+        command = "";
+		while(command_size > 0 && (number_of_characters = recv(data_transfer_fd, buffer, minAmong(command_size, 256), 0)) > 0) {
+			command.append(buffer);
+			command_size -= number_of_characters;
+			bzero(buffer, 256);
+		}
+
+        if(number_of_characters == -1) { perror("Error receiving command"); pthread_exit(NULL); }
+
+        
+    }
+}

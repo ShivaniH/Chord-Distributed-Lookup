@@ -2,11 +2,21 @@
 #include <openssl/sha.h>
 #include <cstring>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <climits>
+#include <pthread.h>
 
 // Extract 64 bits from SHA1
 #define m 8
 
 #define ulli unsigned long long int
+
+// Useful utilities
+
+// Calculates the minimum among x and y
+long long int minAmong(long long int x, long long int y);
 
 // SHA1 utilities
 
