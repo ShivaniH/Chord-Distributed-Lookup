@@ -39,8 +39,7 @@ int main(int argc, char** argv) {
 
     // Listening thread
     pthread_t listening_thread;
-	ChordNode* listening_thread_arg = (ChordNode*) malloc(sizeof(ChordNode));
-	if(pthread_create(&listening_thread, NULL, startListeningPort, (void *) listening_thread_arg)) { perror("Error creating listening thread"); exit(0); }
+	if(pthread_create(&listening_thread, NULL, startListeningPort, (void *) c)) { perror("Error creating listening thread"); exit(0); }
 	pthread_detach(listening_thread);
 
     while (true) {
