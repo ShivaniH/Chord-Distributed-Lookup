@@ -1,5 +1,6 @@
 #include "ChordNode.hpp"
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -38,17 +39,19 @@ int main(int argc, char** argv) {
 
     // Listening thread
     pthread_t listening_thread;
-	ChordNode* listening_thread_arg = (ChordNode*) malloc(sizeof(ChordNode));
-	if(pthread_create(&listening_thread, NULL, startListeningPort, (void *) listening_thread_arg)) { perror("Error creating listening thread"); exit(0); }
+	if(pthread_create(&listening_thread, NULL, startListeningPort, (void *) c)) { perror("Error creating listening thread"); exit(0); }
 	pthread_detach(listening_thread);
 
     while (true) {
-        cin >> command;
+        getline(cin, command);
         if(command.find("create_chord") != string::npos) {
             c->create();
         } else if(command.find("join_chord") != string::npos) {
             vector<string> result;
             boost::split(result, command, boost::is_any_of(" "));
+            // for(string i:result){
+            //     cout << i << "\n";
+            // }
 
             if(result.size() != 3) { perror("Error the required parameters are join_chord <ip address> <port number>\n"); exit(0); }
 
