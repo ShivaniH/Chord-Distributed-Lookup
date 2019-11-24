@@ -53,3 +53,5 @@ char* receiveData(long long int& bufferSize, int receiversSocket) {
 
     return buffer;
 }
+
+// Threads

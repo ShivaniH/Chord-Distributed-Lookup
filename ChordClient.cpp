@@ -35,6 +35,8 @@ int main(int argc, char** argv) {
 
     cout << "Your network details: IP Address = " << ip_addresses[1] << " and Port number = " << argv[1] << "\n";
 
+    
+    
     while (true) {
         cin >> command;
         if(command.find("create_chord") != string::npos) {

@@ -3,6 +3,10 @@
 #include <iostream>
 #include <sys/socket.h>
 #include "Utilities.hpp"
+#include <cmath>
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
 
 #define r 1
 
@@ -68,6 +72,11 @@ private:
     // Predecessor of current node
     FingerTableEntry * predecessor;
 
+    // Searching the local finger table for the highest predecessor of id
+    FingerTableEntry * closestPrecedingNode(ulli ID);
+
+    // Finding successor of id
+    std::pair<FingerTableEntry *, bool>  findSuccessor(ulli id);
 public:
     // Initialize the objects
     ChordNode(std::string ipAddress, int portNumber);
@@ -90,12 +99,8 @@ public:
     // Display predecessor
     void displayPredecessor();
 
-    // 
-    void join(std::string nodeID);
-
-    std::string findSuccessor(std::string ID);  // Of a key's ID
-
-    std::string closestPrecedingNode(std::string ID);
+    // Make the fte node join the chord ring
+    void join(FingerTableEntry * fte);
 
     void checkPredecessor();
 
