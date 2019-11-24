@@ -1,5 +1,6 @@
 #include "ChordNode.hpp"
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -43,12 +44,15 @@ int main(int argc, char** argv) {
 	pthread_detach(listening_thread);
 
     while (true) {
-        cin >> command;
+        getline(cin, command);
         if(command.find("create_chord") != string::npos) {
             c->create();
         } else if(command.find("join_chord") != string::npos) {
             vector<string> result;
             boost::split(result, command, boost::is_any_of(" "));
+            // for(string i:result){
+            //     cout << i << "\n";
+            // }
 
             if(result.size() != 3) { perror("Error the required parameters are join_chord <ip address> <port number>\n"); exit(0); }
 
