@@ -33,9 +33,9 @@ int main(int argc, char** argv) {
     if(ip_addresses.size() == 1) { perror("Error connect to internet"); exit(1); }
 
     // Create chord node object
-    ChordNode * c = new ChordNode(ip_addresses[1], stoi(argv[1]));
+    ChordNode * c = new ChordNode(ip_addresses[ip_addresses.size()-1], stoi(argv[1]));
 
-    cout << "Your network details: IP Address = " << ip_addresses[1] << " and Port number = " << argv[1] << "\n";
+    cout << "Your network details: IP Address = " << ip_addresses[ip_addresses.size()-1] << " and Port number = " << argv[1] << "\n";
 
     // Listening thread
     pthread_t listening_thread;
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 
             if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer"); pthread_exit(NULL); }
             sendData((char *)command.c_str(), command.size(), socket_fd);
-            
+
         } else if(command.find("display_finger_table") != string::npos) {
             c->displayFingerTable();
         } else if(command.find("display_hash_table") != string::npos) {
