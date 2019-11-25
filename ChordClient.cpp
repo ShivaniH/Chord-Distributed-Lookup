@@ -42,6 +42,11 @@ int main(int argc, char** argv) {
 	if(pthread_create(&listening_thread, NULL, startListeningPort, (void *) c)) { perror("Error creating listening thread"); exit(0); }
 	pthread_detach(listening_thread);
 
+    // Fix Finger thread
+    pthread_t fix_finger_thread;
+    if(pthread_create(&fix_finger_thread, NULL, fixFingersThread, (void *) c)) { perror("Error fix finger thread"); exit(0); }
+    pthread_detach(fix_finger_thread);
+
     while (true) {
         getline(cin, command);
         if(command.find("create_chord") != string::npos) {
