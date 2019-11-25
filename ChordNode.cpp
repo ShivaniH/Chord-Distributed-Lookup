@@ -78,14 +78,11 @@ void ChordNode::displayHashTable() {
 }
 
 void ChordNode::displayNodeIdentifier() {
-    if(this->nodeIdentifier == NULL) cout << "You are not a part of any chord ring\n";
-    else {
-        cout << "Node identifier: " << *nodeIdentifier << "\n";
-    }
+    cout << "Node identifier: " << *nodeIdentifier << "\n";
 }
 
 void ChordNode::displayPredecessor() {
-    if(this->predecessor == NULL) cout << "You are either not a part of any chord ring or no predecessor yet\n";
+    if(this->predecessor == NULL) cout << "You are not a part of any chord ring\n";
     else {
         cout << predecessor->getIPAddress() << " " << predecessor->getPortNumber() << " " << predecessor->getNodeIdentifier() << "\n";
     }
@@ -111,7 +108,7 @@ void ChordNode::create() {
     // Create a chord ring here
     this->fingerTable = new vector<FingerTableEntry *>(m, new FingerTableEntry("", -1, __LONG_LONG_MAX__));
     this->hashTable = new unordered_map<ulli, string>();
-    this->predecessor = NULL;
+    this->predecessor = new FingerTableEntry(this->ipAddress, this->portNumber, *this->nodeIdentifier);
     this->successorList = new vector<FingerTableEntry *>(r, new FingerTableEntry("", -1, __LONG_LONG_MAX__));
     (*(this->successorList))[0]->setIPAddress(this->ipAddress);
     (*(this->successorList))[0]->setNodeIdentifier(*this->nodeIdentifier);
@@ -142,11 +139,6 @@ void ChordNode::join(FingerTableEntry * fte) {
     } else {
         command = "join_chord " + fte->getIPAddress() + " " + to_string(fte->getPortNumber()) + " " + to_string(fte->getNodeIdentifier());
     }
-
-    // PKB
-    // long long int command_size = command.size();
-    // if(send(socket_fd, &command_size, sizeof(long long int), 0) == -1) { perror("Error sending command size to peer"); pthread_exit(NULL); }
-	// if(send(socket_fd, command.c_str(), command_size, 0) == -1) { perror("Error sending command to peer"); pthread_exit(NULL); }
 
     sendData((char *)command.c_str(), command.size(), socket_fd);
     close(socket_fd);
@@ -190,8 +182,11 @@ FingerTableEntry* ChordNode::closestPrecedingNode(ulli id) {
     return new FingerTableEntry(this->ipAddress, this->portNumber, *this->nodeIdentifier);
 }
 
-void ChordNode::checkPredecessor()
-{
+void ChordNode::changeSuccessor(FingerTableEntry * fte) {
+
+}
+
+void ChordNode::checkPredecessor() {
 
 }
 
