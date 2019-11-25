@@ -136,9 +136,6 @@ void ChordNode::join(FingerTableEntry * fte) {
 
     if(result.second) {
         command = "change_predecessor " + fte->getIPAddress() + " " + to_string(fte->getPortNumber()) + " " + to_string(fte->getNodeIdentifier());
-        (*this->successorList)[0]->setIPAddress(fte->getIPAddress());
-        (*this->successorList)[0]->setPortNumber(fte->getPortNumber());
-        (*this->successorList)[0]->setNodeIdentifier(fte->getNodeIdentifier());
 
         int socket_fd2; struct sockaddr_in server_details2;
         do{
@@ -167,6 +164,10 @@ void ChordNode::join(FingerTableEntry * fte) {
         sendData((char *)command2.c_str(), command2.size(), socket_fd2);
 
         close(socket_fd2);
+
+        (*this->successorList)[0]->setIPAddress(fte->getIPAddress());
+        (*this->successorList)[0]->setPortNumber(fte->getPortNumber());
+        (*this->successorList)[0]->setNodeIdentifier(fte->getNodeIdentifier());
 
     } else {
         command = "join_chord " + fte->getIPAddress() + " " + to_string(fte->getPortNumber()) + " " + to_string(fte->getNodeIdentifier());
