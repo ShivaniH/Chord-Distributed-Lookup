@@ -34,6 +34,8 @@ int main(int argc, char** argv) {
 
     // Create chord node object
     ChordNode * c = new ChordNode(ip_addresses[ip_addresses.size()-1], stoi(argv[1]));
+    c->nodeIdentifier = (ulli *) malloc(sizeof(ulli));
+    *(c->nodeIdentifier) = calculateIdentifier(c->ipAddress + ":" + to_string(c->portNumber));
 
     cout << "Your network details: IP Address = " << ip_addresses[ip_addresses.size()-1] << " and Port number = " << argv[1] << "\n";
 
@@ -63,7 +65,7 @@ int main(int argc, char** argv) {
             server_details.sin_port = htons(stoi(result[2]));
             server_details.sin_addr.s_addr = inet_addr(result[1].c_str());
 
-            command = "join_chord " + c->ipAddress + " " + to_string(c->portNumber);
+            command = "join_chord " + c->ipAddress + " " + to_string(c->portNumber) + " " + to_string(*(c->nodeIdentifier));
 
             if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer"); pthread_exit(NULL); }
             sendData((char *)command.c_str(), command.size(), socket_fd);
