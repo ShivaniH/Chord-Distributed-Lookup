@@ -76,7 +76,7 @@ public:
     std::string ipAddress;
 
     // Initialize the objects
-    ChordNode(std::string ipAddress, int portNumber);
+    ChordNode(std::string ipAddress, int portNumber, ulli nodeIdentifier);
 
     // Creates a chord ring with one node only
     void create();
