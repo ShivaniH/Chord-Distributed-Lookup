@@ -149,6 +149,7 @@ void ChordNode::join(FingerTableEntry * fte) {
 	// if(send(socket_fd, command.c_str(), command_size, 0) == -1) { perror("Error sending command to peer"); pthread_exit(NULL); }
 
     sendData((char *)command.c_str(), command.size(), socket_fd);
+    close(socket_fd);
 }
 
 
@@ -227,7 +228,6 @@ void* interpretCommand(void* thread_arguments) {
     } else if (result[0] == "change_predecessor") {
         if(result.size() != 4) { perror("Error the required parameters are join_chord <ip address> <port number> <node identifier>\n"); exit(0); }
         c->predecessor = new FingerTableEntry(result[1], stoi(result[2]), stoull(result[3]));
-        cout << "change_predecessor\n";
     } else {
         cout << "Invalid command received at the server end\n";
     }
