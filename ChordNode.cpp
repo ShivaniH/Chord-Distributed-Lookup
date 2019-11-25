@@ -42,6 +42,7 @@ ChordNode::ChordNode(string ipAddress, int portNumber, ulli nodeIdentifier) {
     // Initialize the object
     this->ipAddress = ipAddress;
     this->portNumber = portNumber;
+    this->nodeIdentifier = (ulli *) malloc(sizeof(ulli));
     *(this->nodeIdentifier) = nodeIdentifier;
     this->hashTable = new unordered_map<ulli, string>();;
     this->fingerTable = new vector<FingerTableEntry *>(m, new FingerTableEntry("", -1, __LONG_LONG_MAX__));
