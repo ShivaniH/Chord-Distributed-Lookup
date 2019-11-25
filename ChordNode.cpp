@@ -154,6 +154,13 @@ void ChordNode::join(FingerTableEntry * fte) {
         string command2 = "change_predecessor " + this->ipAddress + " " + to_string(this->portNumber) + " " + to_string(*this->nodeIdentifier);
         sendData((char *)command2.c_str(), command2.size(), socket_fd2);
 
+        close(socket_fd2);
+
+        do{
+            socket_fd2 = socket(AF_INET, SOCK_STREAM, 0);
+            if (socket_fd2 == -1) perror("Error opening socket");
+        } while (socket_fd2 == -1);
+
         if(connect(socket_fd2, (struct sockaddr *)&server_details2, sizeof(server_details2)) == -1) { perror("Error connecting with peer"); pthread_exit(NULL); }
         command2 = "change_successor " + result.first->getIPAddress() + " " + to_string(result.first->getPortNumber()) + " " + to_string(result.first->getNodeIdentifier());
         sendData((char *)command2.c_str(), command2.size(), socket_fd2);
