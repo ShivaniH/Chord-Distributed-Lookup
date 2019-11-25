@@ -35,12 +35,17 @@ int main(int argc, char** argv) {
     // Create chord node object
     ChordNode * c = new ChordNode(ip_addresses[ip_addresses.size()-1], stoi(argv[1]), calculateIdentifier(ip_addresses[ip_addresses.size()-1] + ":" + argv[1]));
 
-    cout << "Your network details: IP Address = " << ip_addresses[ip_addresses.size()-1] << " and Port number = " << argv[1] << "\n";
+    cout << "Your network details: IP Address = " << ip_addresses[ip_addresses.size()-1] << ", Port Number = " << argv[1] << " and Node Identifier = " << *c->nodeIdentifier << "\n";
 
     // Listening thread
     pthread_t listening_thread;
 	if(pthread_create(&listening_thread, NULL, startListeningPort, (void *) c)) { perror("Error creating listening thread"); exit(0); }
 	pthread_detach(listening_thread);
+
+    // Fix Finger thread
+    pthread_t fix_finger_thread;
+    if(pthread_create(&fix_finger_thread, NULL, fixFingersThread, (void *) c)) { perror("Error fix finger thread"); exit(0); }
+    pthread_detach(fix_finger_thread);
 
     while (true) {
         getline(cin, command);
@@ -49,6 +54,11 @@ int main(int argc, char** argv) {
         } else if(command.find("join_chord") != string::npos) {
             vector<string> result;
             boost::split(result, command, boost::is_any_of(" "));
+
+            if(c->predecessor != NULL) {
+                cout << "You are already a part of a chord ring\n";
+                continue;
+            }
 
             if(result.size() != 3) { perror("Error the required parameters are join_chord <ip address> <port number>\n"); exit(0); }
 
