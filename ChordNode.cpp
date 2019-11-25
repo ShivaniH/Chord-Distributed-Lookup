@@ -44,8 +44,11 @@ ChordNode::ChordNode(string ipAddress, int portNumber, ulli nodeIdentifier) {
     this->portNumber = portNumber;
     this->nodeIdentifier = (ulli *) malloc(sizeof(ulli));
     *(this->nodeIdentifier) = nodeIdentifier;
-    this->hashTable = new unordered_map<ulli, string>();;
-    this->fingerTable = new vector<FingerTableEntry *>(m, new FingerTableEntry(this->ipAddress, this->portNumber, *this->nodeIdentifier));
+    this->hashTable = new unordered_map<ulli, string>();
+    this->fingerTable = new vector<FingerTableEntry *>(m);
+    for(int i=0; i<m; i++) {
+        (*(this->fingerTable))[i] = new FingerTableEntry(this->ipAddress, this->portNumber, *this->nodeIdentifier);
+    }
     this->successorList = new vector<FingerTableEntry *>(r, new FingerTableEntry("", -1, __LONG_LONG_MAX__));
     this->predecessor = NULL;
 }
@@ -349,7 +352,7 @@ void* fixFingersThread(void* thread_arguments) {
             server_details.sin_port = htons(c->successorList->at(0)->getPortNumber());
             server_details.sin_addr.s_addr = inet_addr(c->successorList->at(0)->getIPAddress().c_str());
 
-            cout << "PKB: " << c->successorList->at(0)->getIPAddress() << " " << c->successorList->at(0)->getPortNumber() << " " << c->successorList->at(0)->getNodeIdentifier() << "\n";
+            cout << "Successor Details: " << c->successorList->at(0)->getIPAddress() << " " << c->successorList->at(0)->getPortNumber() << " " << c->successorList->at(0)->getNodeIdentifier() << "\n";
 
             do {
                 socket_fd = socket(AF_INET, SOCK_STREAM, 0);
