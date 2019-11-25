@@ -335,3 +335,34 @@ void* startListeningPort(void* thread_arguments) {
 		pthread_detach(interpret_command_thread);
     }
 }
+
+// Fix fingers thread
+void* fixFingersThread(void* thread_arguments) {
+    ChordNode * c = (ChordNode *)thread_arguments;
+    if(c->predecessor != NULL) {
+        string command = "fix_fingers " + c->ipAddress + " " + to_string(c->portNumber) + " " + to_string(*c->nodeIdentifier);
+
+        int socket_fd; struct sockaddr_in server_details;
+
+        while(1) {
+            bzero((char *) &server_details, sizeof(server_details));
+            server_details.sin_family = AF_INET;
+            server_details.sin_port = htons(c->successorList->at(0)->getPortNumber());
+            server_details.sin_addr.s_addr = inet_addr(c->successorList->at(0)->getIPAddress().c_str());
+
+            do {
+                socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+                if (socket_fd == -1) perror("Error opening socket");
+            } while (socket_fd == -1);
+
+            if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer"); pthread_exit(NULL); }
+
+            sendData((char *)command.c_str(), command.size(), socket_fd);
+
+            close(socket_fd);
+
+            sleep(10);
+        }
+    }
+    pthread_exit(NULL);
+}
