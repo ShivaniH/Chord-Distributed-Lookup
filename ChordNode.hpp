@@ -42,9 +42,9 @@ public:
 
 class ChordNode {
     /*
-    TODO: create(), join(), findSuccessor(), notify(), closestPrecedingNode(), stabilize(), checkPredecessor(), fixFingers(), displays()
+    TODO: create(), join(), findSuccessor(), notify(), closestPrecedingNode(), stabilize(), fixFingers(), displays()
     
-    RUN PERIODICALLY: stabilize(), checkPredecessor(), fixFingers()
+    RUN PERIODICALLY: stabilize(), fixFingers()
     */
 
 public:
@@ -99,12 +99,8 @@ public:
     // Make the fte node join the chord ring
     void join(FingerTableEntry * fte);
 
-    // Change the successor of fte node to the current node
-    void changeSuccessor(FingerTableEntry * fte);
-
-    void checkPredecessor();
-
-    void fixFingers();
+    // Fixing the finger table
+    void fixFingers(FingerTableEntry * fte);
 
     void stabilize();
 
@@ -115,3 +111,6 @@ public:
 
 // Listening port
 void* startListeningPort(void* thread_arguments);
+
+// Fix fingers thread
+void* fixFingersThread(void* thread_arguments);
