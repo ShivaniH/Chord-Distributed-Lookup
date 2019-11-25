@@ -362,7 +362,7 @@ void* fixFingersThread(void* thread_arguments) {
 
             close(socket_fd);
 
-            sleep(10);
+            sleep(30);
         }
     }
     pthread_exit(NULL);
