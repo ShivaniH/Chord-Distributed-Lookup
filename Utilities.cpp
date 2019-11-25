@@ -36,7 +36,7 @@ void sendData(char *buffer, long long int sendLength, int sendersSocket) {
         bytesSent = send(sendersSocket, ptrToBuffer, sendLength*sizeof(char), 0);
         if(bytesSent == -1) { perror("Error sending data"); pthread_exit(NULL); }
         ptrToBuffer += bytesSent;
-        sendLength -= bytesSent; 
+        sendLength -= bytesSent;
     }
 }
 
@@ -44,7 +44,7 @@ void sendData(char *buffer, long long int sendLength, int sendersSocket) {
 char* receiveData(long long int& bufferSize, int receiversSocket) {
     // Receive total bytes to be received
     if(recv(receiversSocket, &bufferSize, sizeof(long long int), 0) == -1) { perror("Error receiving size"); pthread_exit(NULL); }
-    char * bufferStorage = (char*)calloc(bufferSize, sizeof(char));
+    char * bufferStorage = (char*)calloc(bufferSize+1, sizeof(char));
     
     long long int bytesRecvd, totalBytes = 0;
     char * buffer = bufferStorage;

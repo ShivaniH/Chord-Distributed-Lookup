@@ -47,11 +47,7 @@ class ChordNode {
     RUN PERIODICALLY: stabilize(), checkPredecessor(), fixFingers()
     */
 
-private:
-    
-    // Obtained using SHA-1. Identifies the node in the chord
-    ulli * nodeIdentifier;
-    
+public:
     // Stores the key value pair in the current node
     std::unordered_map<ulli, std::string> * hashTable;
     
@@ -69,7 +65,10 @@ private:
 
     // Finding successor of id
     std::pair<FingerTableEntry *, bool>  findSuccessor(ulli id);
-public:
+
+    // Obtained using SHA-1. Identifies the node in the chord
+    ulli * nodeIdentifier;
+
     // Port number of current node
     int portNumber;
 
@@ -99,6 +98,9 @@ public:
 
     // Make the fte node join the chord ring
     void join(FingerTableEntry * fte);
+
+    // Change the successor of fte node to the current node
+    void changeSuccessor(FingerTableEntry * fte);
 
     void checkPredecessor();
 

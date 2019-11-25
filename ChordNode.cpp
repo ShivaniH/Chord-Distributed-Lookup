@@ -78,14 +78,11 @@ void ChordNode::displayHashTable() {
 }
 
 void ChordNode::displayNodeIdentifier() {
-    if(this->nodeIdentifier == NULL) cout << "You are not a part of any chord ring\n";
-    else {
-        cout << "Node identifier: " << *nodeIdentifier << "\n";
-    }
+    cout << "Node identifier: " << *nodeIdentifier << "\n";
 }
 
 void ChordNode::displayPredecessor() {
-    if(this->predecessor == NULL) cout << "You are either not a part of any chord ring or no predecessor yet\n";
+    if(this->predecessor == NULL) cout << "You are not a part of any chord ring\n";
     else {
         cout << predecessor->getIPAddress() << " " << predecessor->getPortNumber() << " " << predecessor->getNodeIdentifier() << "\n";
     }
@@ -111,9 +108,7 @@ void ChordNode::create() {
     // Create a chord ring here
     this->fingerTable = new vector<FingerTableEntry *>(m, new FingerTableEntry("", -1, __LONG_LONG_MAX__));
     this->hashTable = new unordered_map<ulli, string>();
-    this->nodeIdentifier = (ulli *) malloc(sizeof(ulli));
-    *(this->nodeIdentifier) = calculateIdentifier(this->ipAddress + ":" + to_string(this->portNumber));
-    this->predecessor = NULL;
+    this->predecessor = new FingerTableEntry(this->ipAddress, this->portNumber, *this->nodeIdentifier);
     this->successorList = new vector<FingerTableEntry *>(r, new FingerTableEntry("", -1, __LONG_LONG_MAX__));
     (*(this->successorList))[0]->setIPAddress(this->ipAddress);
     (*(this->successorList))[0]->setNodeIdentifier(*this->nodeIdentifier);
@@ -141,16 +136,36 @@ void ChordNode::join(FingerTableEntry * fte) {
 
     if(result.second) {
         command = "change_predecessor " + fte->getIPAddress() + " " + to_string(fte->getPortNumber()) + " " + to_string(fte->getNodeIdentifier());
+        (*this->successorList)[0]->setIPAddress(fte->getIPAddress());
+        (*this->successorList)[0]->setPortNumber(fte->getPortNumber());
+        (*this->successorList)[0]->setNodeIdentifier(fte->getNodeIdentifier());
+
+        int socket_fd2; struct sockaddr_in server_details2;
+        do{
+            socket_fd2 = socket(AF_INET, SOCK_STREAM, 0);
+            if (socket_fd2 == -1) perror("Error opening socket");
+        } while (socket_fd2 == -1);
+
+        bzero((char *) &server_details2, sizeof(server_details2));
+        server_details2.sin_family = AF_INET;
+        server_details2.sin_port = htons(fte->getPortNumber());
+        server_details2.sin_addr.s_addr = inet_addr(fte->getIPAddress().c_str());
+
+        if(connect(socket_fd2, (struct sockaddr *)&server_details2, sizeof(server_details2)) == -1) { perror("Error connecting with peer"); pthread_exit(NULL); }
+        string command2 = "change_predecessor " + this->ipAddress + " " + to_string(this->portNumber) + " " + to_string(*this->nodeIdentifier);
+        sendData((char *)command2.c_str(), command2.size(), socket_fd2);
+
+        command2 = "change_successor " + result.first->getIPAddress() + " " + to_string(result.first->getPortNumber()) + " " + to_string(result.first->getNodeIdentifier());
+        sendData((char *)command2.c_str(), command2.size(), socket_fd2);
+
+        close(socket_fd2);
+
     } else {
         command = "join_chord " + fte->getIPAddress() + " " + to_string(fte->getPortNumber()) + " " + to_string(fte->getNodeIdentifier());
     }
 
-    // PKB
-    // long long int command_size = command.size();
-    // if(send(socket_fd, &command_size, sizeof(long long int), 0) == -1) { perror("Error sending command size to peer"); pthread_exit(NULL); }
-	// if(send(socket_fd, command.c_str(), command_size, 0) == -1) { perror("Error sending command to peer"); pthread_exit(NULL); }
-
     sendData((char *)command.c_str(), command.size(), socket_fd);
+    close(socket_fd);
 }
 
 
@@ -191,8 +206,11 @@ FingerTableEntry* ChordNode::closestPrecedingNode(ulli id) {
     return new FingerTableEntry(this->ipAddress, this->portNumber, *this->nodeIdentifier);
 }
 
-void ChordNode::checkPredecessor()
-{
+void ChordNode::changeSuccessor(FingerTableEntry * fte) {
+    
+}
+
+void ChordNode::checkPredecessor() {
 
 }
 
@@ -212,12 +230,36 @@ void ChordNode::notify(string nodeID)
 }
 
 // Threads
+
 struct thread_arguments_structure {
 	char command[256]; ChordNode* c; int dataTransferFD;
 };
 
 void* interpretCommand(void* thread_arguments) {
-    char * command = ((struct thread_arguments_structure *) thread_arguments)->command;
+    string command (((struct thread_arguments_structure *) thread_arguments)->command);
+    ChordNode* c = ((struct thread_arguments_structure *) thread_arguments)->c;
+    
+    vector<string> result;
+    boost::split(result, command, boost::is_any_of(" "));
+    
+    if(result[0] == "join_chord") {
+        if(result.size() != 4) { perror("Error the required parameters are join_chord <ip address> <port number> <node identifier>\n"); exit(0); }
+        c->join(new FingerTableEntry(result[1], stoi(result[2]), stoull(result[3])));
+    } else if (result[0] == "change_predecessor") {
+        if(result.size() != 4) { perror("Error the required parameters are change_predecessor <ip address> <port number> <node identifier>\n"); exit(0); }
+        c->predecessor = new FingerTableEntry(result[1], stoi(result[2]), stoull(result[3]));
+    } else if (result[0] == "change_successor") {
+        if(result.size() != 4) { perror("Error the required parameters are change_successor <ip address> <port number> <node identifier>\n"); exit(0); }
+        (*c->successorList)[0]->setIPAddress(result[1]);
+        (*c->successorList)[0]->setPortNumber(stoi(result[2]));
+        (*c->successorList)[0]->setNodeIdentifier(stoull(result[3]));
+    } else {
+        cout << "Invalid command received at the server end\n";
+    }
+
+    close(((struct thread_arguments_structure *) thread_arguments)->dataTransferFD);
+
+    pthread_exit(NULL);
 }
 
 // Listening port
