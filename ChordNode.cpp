@@ -131,7 +131,6 @@ void ChordNode::join(FingerTableEntry * fte) {
     server_details.sin_port = htons(result.first->getPortNumber());
     server_details.sin_addr.s_addr = inet_addr(result.first->getIPAddress().c_str());
 
-    if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer"); pthread_exit(NULL); }
     string command;
 
     if(result.second) {
@@ -155,6 +154,14 @@ void ChordNode::join(FingerTableEntry * fte) {
         string command2 = "change_predecessor " + this->ipAddress + " " + to_string(this->portNumber) + " " + to_string(*this->nodeIdentifier);
         sendData((char *)command2.c_str(), command2.size(), socket_fd2);
 
+        close(socket_fd2);
+
+        do{
+            socket_fd2 = socket(AF_INET, SOCK_STREAM, 0);
+            if (socket_fd2 == -1) perror("Error opening socket");
+        } while (socket_fd2 == -1);
+
+        if(connect(socket_fd2, (struct sockaddr *)&server_details2, sizeof(server_details2)) == -1) { perror("Error connecting with peer"); pthread_exit(NULL); }
         command2 = "change_successor " + result.first->getIPAddress() + " " + to_string(result.first->getPortNumber()) + " " + to_string(result.first->getNodeIdentifier());
         sendData((char *)command2.c_str(), command2.size(), socket_fd2);
 
@@ -164,6 +171,7 @@ void ChordNode::join(FingerTableEntry * fte) {
         command = "join_chord " + fte->getIPAddress() + " " + to_string(fte->getPortNumber()) + " " + to_string(fte->getNodeIdentifier());
     }
 
+    if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer"); pthread_exit(NULL); }
     sendData((char *)command.c_str(), command.size(), socket_fd);
     close(socket_fd);
 }
