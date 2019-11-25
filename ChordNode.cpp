@@ -339,16 +339,17 @@ void* startListeningPort(void* thread_arguments) {
 // Fix fingers thread
 void* fixFingersThread(void* thread_arguments) {
     ChordNode * c = (ChordNode *)thread_arguments;
-    if(c->predecessor != NULL) {
-        string command = "fix_fingers " + c->ipAddress + " " + to_string(c->portNumber) + " " + to_string(*c->nodeIdentifier);
-
-        int socket_fd; struct sockaddr_in server_details;
-
-        while(1) {
+    string command = "fix_fingers " + c->ipAddress + " " + to_string(c->portNumber) + " " + to_string(*c->nodeIdentifier);
+    int socket_fd; struct sockaddr_in server_details;
+    
+    while(1) {
+        if(c->predecessor != NULL) {
             bzero((char *) &server_details, sizeof(server_details));
             server_details.sin_family = AF_INET;
             server_details.sin_port = htons(c->successorList->at(0)->getPortNumber());
             server_details.sin_addr.s_addr = inet_addr(c->successorList->at(0)->getIPAddress().c_str());
+
+            // cout << "PKB: " << c->successorList->at(0)->getIPAddress() << " " << c->successorList->at(0)->getPortNumber() << " " << c->successorList->at(0)->getNodeIdentifier() << "\n";
 
             do {
                 socket_fd = socket(AF_INET, SOCK_STREAM, 0);
