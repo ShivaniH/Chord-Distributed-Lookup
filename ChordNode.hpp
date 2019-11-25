@@ -99,6 +99,9 @@ public:
     // Make the fte node join the chord ring
     void join(FingerTableEntry * fte);
 
+    // Change the successor of fte node to the current node
+    void changeSuccessor(FingerTableEntry * fte);
+
     void checkPredecessor();
 
     void fixFingers();
