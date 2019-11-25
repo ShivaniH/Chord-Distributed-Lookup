@@ -249,7 +249,7 @@ void* startListeningPort(void* thread_arguments) {
         long long int receiver_size;
         string command(receiveData(receiver_size, data_transfer_fd));
 
-        // cout << "Command Received: " << command << "\n";
+        cout << "Command Received: " << command << "\n";
 
         pthread_t interpret_command_thread;
         struct thread_arguments_structure * send_chunk_thread_arg = (struct thread_arguments_structure *)malloc(sizeof(struct thread_arguments_structure));
