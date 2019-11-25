@@ -111,8 +111,6 @@ void ChordNode::create() {
     // Create a chord ring here
     this->fingerTable = new vector<FingerTableEntry *>(m, new FingerTableEntry("", -1, __LONG_LONG_MAX__));
     this->hashTable = new unordered_map<ulli, string>();
-    this->nodeIdentifier = (ulli *) malloc(sizeof(ulli));
-    *(this->nodeIdentifier) = calculateIdentifier(this->ipAddress + ":" + to_string(this->portNumber));
     this->predecessor = NULL;
     this->successorList = new vector<FingerTableEntry *>(r, new FingerTableEntry("", -1, __LONG_LONG_MAX__));
     (*(this->successorList))[0]->setIPAddress(this->ipAddress);
@@ -217,7 +215,26 @@ struct thread_arguments_structure {
 };
 
 void* interpretCommand(void* thread_arguments) {
-    char * command = ((struct thread_arguments_structure *) thread_arguments)->command;
+    string command (((struct thread_arguments_structure *) thread_arguments)->command);
+    ChordNode* c = ((struct thread_arguments_structure *) thread_arguments)->c;
+    
+    vector<string> result;
+    boost::split(result, command, boost::is_any_of(" "));
+    
+    if(result[0] == "join_chord") {
+        if(result.size() != 4) { perror("Error the required parameters are join_chord <ip address> <port number> <node identifier>\n"); exit(0); }
+        c->join(new FingerTableEntry(result[1], stoi(result[1]), stoull(result[3])));
+    } else if (result[0] == "change_predecessor") {
+        if(result.size() != 4) { perror("Error the required parameters are join_chord <ip address> <port number> <node identifier>\n"); exit(0); }
+        c->predecessor = new FingerTableEntry(result[1], stoi(result[2]), stoull(result[3]));
+        cout << "change_predecessor\n";
+    } else {
+        cout << "Invalid command received at the server end\n";
+    }
+
+    close(((struct thread_arguments_structure *) thread_arguments)->dataTransferFD);
+
+    pthread_exit(NULL);
 }
 
 // Listening port
