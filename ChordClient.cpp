@@ -33,9 +33,7 @@ int main(int argc, char** argv) {
     if(ip_addresses.size() == 1) { perror("Error connect to internet"); exit(1); }
 
     // Create chord node object
-    ChordNode * c = new ChordNode(ip_addresses[ip_addresses.size()-1], stoi(argv[1]));
-    c->nodeIdentifier = (ulli *) malloc(sizeof(ulli));
-    *(c->nodeIdentifier) = calculateIdentifier(c->ipAddress + ":" + to_string(c->portNumber));
+    ChordNode * c = new ChordNode(ip_addresses[ip_addresses.size()-1], stoi(argv[1]), calculateIdentifier(ip_addresses[ip_addresses.size()-1] + ":" + argv[1]));
 
     cout << "Your network details: IP Address = " << ip_addresses[ip_addresses.size()-1] << " and Port number = " << argv[1] << "\n";
 
