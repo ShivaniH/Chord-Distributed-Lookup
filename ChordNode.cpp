@@ -178,7 +178,6 @@ void ChordNode::join(FingerTableEntry * fte) {
     close(socket_fd);
 }
 
-
 pair<FingerTableEntry *, bool> ChordNode::findSuccessor(ulli id) {
     // Finding successor of id
     if(id <= *this->nodeIdentifier) {
@@ -216,17 +215,18 @@ FingerTableEntry* ChordNode::closestPrecedingNode(ulli id) {
     return new FingerTableEntry(this->ipAddress, this->portNumber, *this->nodeIdentifier);
 }
 
-void ChordNode::changeSuccessor(FingerTableEntry * fte) {
-    
-}
-
-void ChordNode::checkPredecessor() {
-
-}
-
-void ChordNode::fixFingers()
-{
-
+void ChordNode::fixFingers(FingerTableEntry * fte) {
+    ulli node_identifier = fte->getNodeIdentifier();
+    if(node_identifier <= *this->nodeIdentifier) {
+        node_identifier += pow(2, m);
+    }
+    for(int i = this->fingerTable->size()-1; i >= 0; i--) {
+        if(*this->nodeIdentifier + pow(2, i) <= node_identifier) {
+            this->fingerTable->at(i)->setIPAddress(fte->getIPAddress());
+            this->fingerTable->at(i)->setNodeIdentifier(fte->getNodeIdentifier());
+            this->fingerTable->at(i)->setPortNumber(fte->getPortNumber());
+        }
+    }
 }
 
 void ChordNode::stabilize()
@@ -245,6 +245,7 @@ struct thread_arguments_structure {
 	char command[256]; ChordNode* c; int dataTransferFD;
 };
 
+// Interpret the received command from server
 void* interpretCommand(void* thread_arguments) {
     string command (((struct thread_arguments_structure *) thread_arguments)->command);
     ChordNode* c = ((struct thread_arguments_structure *) thread_arguments)->c;
@@ -263,6 +264,29 @@ void* interpretCommand(void* thread_arguments) {
         (*c->successorList)[0]->setIPAddress(result[1]);
         (*c->successorList)[0]->setPortNumber(stoi(result[2]));
         (*c->successorList)[0]->setNodeIdentifier(stoull(result[3]));
+    } else if (result[0] == "fix_fingers") {
+        if(result.size() != 4) { perror("Error the required parameters are fix_fingers <ip address> <port number> <node identifier>\n"); exit(0); }
+        if(result[1]==c->ipAddress && stoi(result[2])==c->portNumber && stoull(result[3])==*c->nodeIdentifier) {
+            // Don't do anything (as the heart beat message has come back)
+        } else {
+            int socket_fd; struct sockaddr_in server_details;
+            do {
+                socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+                if (socket_fd == -1) perror("Error opening socket");
+            } while (socket_fd == -1);
+
+            bzero((char *) &server_details, sizeof(server_details));
+            server_details.sin_family = AF_INET;
+            server_details.sin_port = htons(c->successorList->at(0)->getPortNumber());
+            server_details.sin_addr.s_addr = inet_addr(c->successorList->at(0)->getIPAddress().c_str());
+
+            if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer"); pthread_exit(NULL); }
+            sendData((char *)command.c_str(), command.size(), socket_fd);
+            close(socket_fd);
+
+            c->fixFingers(new FingerTableEntry(result[1], stoi(result[2]), stoull(result[3])));
+            cout << "FingerTable updated successfully using IP Address = " << result[1] << ", Port Number = " << result[2] << " and Node Identifier = " << result[3] << "\n";
+        }
     } else {
         cout << "Invalid command received at the server end\n";
     }
@@ -281,7 +305,6 @@ void* startListeningPort(void* thread_arguments) {
 		socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 		if (socket_fd == -1) perror("Error opening socket");
 	} while (socket_fd == -1);
-
 
 	struct sockaddr_in server_details, client_details;
 	bzero((char *) &server_details, sizeof(server_details));
