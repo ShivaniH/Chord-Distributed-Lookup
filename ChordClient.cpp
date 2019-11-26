@@ -130,11 +130,8 @@ int main(int argc, char** argv) {
 
             if(result.size() != 1) { perror("Error the required parameters are leave_chord\n"); continue; }
             
-            ulli key_identifier = calculateIdentifier(result[1]);
-
-            cout << "Finding the value for the key identifier = " << key_identifier << "\n";
-
-            c->searchKey(new FingerTableEntry(c->ipAddress, c->portNumber, key_identifier));
+            c->leaveChord();
+            break;
         } else {
             cout << "Invalid command\n";
         }
