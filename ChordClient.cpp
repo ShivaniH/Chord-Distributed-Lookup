@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
                 continue;
             }
 
-            if(result.size() != 3) { perror("Error the required parameters are join_chord <ip address> <port number>\n"); exit(0); }
+            if(result.size() != 3) { perror("Error the required parameters are join_chord <ip address> <port number>\n"); continue; }
 
             int socket_fd; struct sockaddr_in server_details;
             do{
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 
             command = "join_chord " + c->ipAddress + " " + to_string(c->portNumber) + " " + to_string(*(c->nodeIdentifier));
 
-            if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer"); pthread_exit(NULL); }
+            if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer"); continue; }
             sendData((char *)command.c_str(), command.size(), socket_fd);
 
         } else if(command.find("display_finger_table") != string::npos) {
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
                 continue;
             }
 
-            if(result.size() != 3) { perror("Error the required parameters are insert_key <key> <value>\n"); exit(0); }
+            if(result.size() != 3) { perror("Error the required parameters are insert_key <key> <value>\n"); continue; }
             
             ulli key_identifier = calculateIdentifier(result[1]);
             cout << "Key that will be inserted is: " << key_identifier << "\n";
