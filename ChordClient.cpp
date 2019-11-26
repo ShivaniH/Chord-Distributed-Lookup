@@ -47,6 +47,11 @@ int main(int argc, char** argv) {
     if(pthread_create(&fix_finger_thread, NULL, fixFingersThread, (void *) c)) { perror("Error fix finger thread"); exit(0); }
     pthread_detach(fix_finger_thread);
 
+    // Redistribute keys thread
+    pthread_t redist_thread;
+    if(pthread_create(&redist_thread, NULL, redistKeys, (void *) c)) { perror("Error creating key redistributing thread"); exit(0); }
+	pthread_detach(redist_thread);
+
     while (true) {
         getline(cin, command);
         if(command.find("create_chord") != string::npos) {
