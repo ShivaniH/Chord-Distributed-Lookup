@@ -88,6 +88,21 @@ int main(int argc, char** argv) {
             c->displayPredecessor();
         } else if(command.find("display_successor_list") != string::npos) {
             c->displaySuccessorList();
+        } else if(command.find("insert_key") != string::npos) {
+            vector<string> result;
+            boost::split(result, command, boost::is_any_of(" "));
+
+            if(c->predecessor == NULL) {
+                cout << "You are not a part of any chord ring\n";
+                continue;
+            }
+
+            if(result.size() != 3) { perror("Error the required parameters are insert_key <key> <value>\n"); exit(0); }
+            
+            ulli key_identifier = calculateIdentifier(result[1]);
+            cout << "Key that will be inserted is: " << key_identifier << "\n";
+
+            c->insertKey(new FingerTableEntry(result[2], -1, key_identifier));
         } else {
             cout << "Invalid command\n";
         }
