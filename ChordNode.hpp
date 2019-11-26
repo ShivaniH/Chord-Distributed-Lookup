@@ -120,5 +120,9 @@ void* startListeningPort(void* thread_arguments);
 // Fix fingers thread
 void* fixFingersThread(void* thread_arguments);
 
+<<<<<<< HEAD
 // Redistribute keys thread
 void* redistKeys(void* thread_arguments);
+=======
+void* redistKeys(void* thread_arguments);
+>>>>>>> 58f1441e85798803e3689cb6347dd54acb2e7335

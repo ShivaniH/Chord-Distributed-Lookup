@@ -53,6 +53,11 @@ To check who is the current node's predecessor:
 display_predecessor
 ```
 
+To check the current node's identifier:
+```bash
+display_node_identifier
+```
+
 To view the current node's finger table:
 ```bash
 display_finger_table
@@ -71,4 +76,8 @@ display_hash_table
 To search for a key in the chord ring (and retrieve its value, from whichever node has it):
 ```bash
 search_key put-key-string-here
+```
+To leave the chord ring and exit the program:
+```bash
+leave_chord
 ```
