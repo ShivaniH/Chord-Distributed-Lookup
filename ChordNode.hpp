@@ -105,6 +105,9 @@ public:
     // Make the key value pair insert in the chord ring. Key = node identifier and value = ip address
     void insertKey(FingerTableEntry * fte);
 
+    // Search for the value for a particular key in the chord ring. Key = node identifier, ip address = ip address of the requested host and port number = port number of the requested host
+    void searchKey(FingerTableEntry * fte);
+
     void stabilize();
 
     void notify(std::string nodeID);
