@@ -511,8 +511,8 @@ void* redistKeys(void* thread_arguments)
 {
     ChordNode * c = (ChordNode *)thread_arguments;
     while(1) {
-
-        ulli predId = (c->predecessor->getNodeIdentifier());
+        if(c->predecessor != NULL) {
+            ulli predId = (c->predecessor->getNodeIdentifier());
 
         for (auto it = (*c->hashTable).begin(); it != (*c->hashTable).end(); ) 
         {
@@ -550,6 +550,7 @@ void* redistKeys(void* thread_arguments)
 
         sleep(45);
 
+        }        
     }
     pthread_exit(NULL);
 }
