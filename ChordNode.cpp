@@ -223,11 +223,19 @@ void ChordNode::fixFingers(FingerTableEntry * fte) {
     if(node_identifier <= *this->nodeIdentifier) {
         node_identifier += pow(2, m);
     }
+    ulli current_node_identifier;
     for(int i = this->fingerTable->size()-1; i >= 0; i--) {
         if(*this->nodeIdentifier + pow(2, i) <= node_identifier) {
-            this->fingerTable->at(i)->setIPAddress(fte->getIPAddress());
-            this->fingerTable->at(i)->setNodeIdentifier(fte->getNodeIdentifier());
-            this->fingerTable->at(i)->setPortNumber(fte->getPortNumber());
+            current_node_identifier = this->fingerTable->at(i)->getNodeIdentifier();
+            if(current_node_identifier < *this->nodeIdentifier) {
+                current_node_identifier += pow(2, m);
+            }
+
+            if(node_identifier < current_node_identifier) {
+                this->fingerTable->at(i)->setIPAddress(fte->getIPAddress());
+                this->fingerTable->at(i)->setNodeIdentifier(fte->getNodeIdentifier());
+                this->fingerTable->at(i)->setPortNumber(fte->getPortNumber());
+            }
         }
     }
 }
