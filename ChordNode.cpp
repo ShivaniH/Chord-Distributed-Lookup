@@ -388,12 +388,15 @@ void* interpretCommand(void* thread_arguments) {
         sendData((char *)valueToSend.c_str(), valueToSend.size(), socket_fd);
         close(socket_fd);
 
+<<<<<<< HEAD
     } else if (result[0] == "result_value") {
         if(result.size() != 3) {
             cout << "Error: While trying to fetch the value of a key. Try after some time as the fingers are not updated yet\n";
         } else {
             cout << "The value for the key identifier = " << result[1] << " is = " << result[2] << "\n";
         }
+=======
+>>>>>>> 3da4fc6e15d1bb298b1718a4885502eb6ef5455a
     } else {
         cout << "Invalid command received at the server end\n";
     }
