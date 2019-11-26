@@ -110,10 +110,6 @@ public:
 
     // Leave the chord ring by transferring all the key value pairs to the successor node
     void leaveChord();
-
-    void stabilize();
-
-    void notify(std::string nodeID);
 };
 
 // Threads
@@ -123,3 +119,6 @@ void* startListeningPort(void* thread_arguments);
 
 // Fix fingers thread
 void* fixFingersThread(void* thread_arguments);
+
+// Redistribute keys thread
+void* redistKeys(void* thread_arguments);

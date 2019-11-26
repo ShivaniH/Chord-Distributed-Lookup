@@ -325,16 +325,6 @@ void ChordNode::leaveChord() {
     this->predecessor = NULL;
 }
 
-void ChordNode::stabilize()
-{
-
-}
-
-void ChordNode::notify(string nodeID)
-{
-
-}
-
 // Threads
 
 struct thread_arguments_structure {
@@ -503,6 +493,47 @@ void* fixFingersThread(void* thread_arguments) {
 
             sleep(30);
         }
+    }
+    pthread_exit(NULL);
+}
+
+// Redistribute keys thread
+void* redistKeys(void* thread_arguments) {
+    ChordNode * c = (ChordNode *)thread_arguments;
+    int socket_fd; struct sockaddr_in server_details; string keyValToSend; ulli predId;
+    while(1) {
+        if(c->predecessor != NULL) {
+            for(auto it = (*c->hashTable).begin(); it != (*c->hashTable).end(); ) {
+                predId = (c->predecessor->getNodeIdentifier());
+                // if(*c->nodeIdentifier <= it->first && predId <= *c->nodeIdentifier) {
+                //     predId += pow(2, m);
+                // }
+
+                if( (it->first > *c->nodeIdentifier && predId > 0 && predId <= *c->nodeIdentifier && (predId + pow(2, m) >= it->first) ) || (it->first > *c->nodeIdentifier && predId > *c->nodeIdentifier && it->first <= predId )  ||  (it->first <= *c->nodeIdentifier && predId > 0 && predId <= *c->nodeIdentifier && it->first <= predId) ) {
+                // if(it->first <= predId && predId <= *c->nodeIdentifier) {
+                    bzero((char *) &server_details, sizeof(server_details));
+                    server_details.sin_family = AF_INET;
+                    server_details.sin_port = htons(c->predecessor->getPortNumber());
+                    server_details.sin_addr.s_addr = inet_addr(c->predecessor->getIPAddress().c_str());
+
+                    do {
+                        socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+                        if (socket_fd == -1) perror("Error opening socket");
+                    } while (socket_fd == -1);
+
+                    keyValToSend = "insert_key_final " + to_string(it->first) + " " + it->second;
+                    if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error 7 connecting with peer"); pthread_exit(NULL); }
+                    sendData((char *)keyValToSend.c_str(), keyValToSend.size(), socket_fd);
+                    close(socket_fd);
+                    (*c->hashTable).erase(it->first);
+                    cout << "Redistributing key with key identifier = " << it->first << "\n";
+                } else {
+                    it++;
+                }
+            }
+        }
+
+        sleep(45);
     }
     pthread_exit(NULL);
 }
