@@ -227,7 +227,7 @@ void ChordNode::fixFingers(FingerTableEntry * fte) {
     for(int i = this->fingerTable->size()-1; i >= 0; i--) {
         if(*this->nodeIdentifier + pow(2, i) <= node_identifier) {
             current_node_identifier = this->fingerTable->at(i)->getNodeIdentifier();
-            if(current_node_identifier < *this->nodeIdentifier) {
+            if(current_node_identifier <= *this->nodeIdentifier) {
                 current_node_identifier += pow(2, m);
             }
 
