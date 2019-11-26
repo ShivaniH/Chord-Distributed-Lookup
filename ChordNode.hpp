@@ -108,6 +108,9 @@ public:
     // Search for the value for a particular key in the chord ring. Key = node identifier, ip address = ip address of the requested host and port number = port number of the requested host
     void searchKey(FingerTableEntry * fte);
 
+    // Leave the chord ring by transferring all the key value pairs to the successor node
+    void leaveChord();
+
     void stabilize();
 
     void notify(std::string nodeID);
