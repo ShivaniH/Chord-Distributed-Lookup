@@ -497,7 +497,6 @@ void* fixFingersThread(void* thread_arguments) {
     pthread_exit(NULL);
 }
 
-<<<<<<< HEAD
 // Redistribute keys thread
 void* redistKeys(void* thread_arguments) {
     ChordNode * c = (ChordNode *)thread_arguments;
@@ -531,55 +530,10 @@ void* redistKeys(void* thread_arguments) {
                 } else {
                     it++;
                 }
-=======
-void* redistKeys(void* thread_arguments)
-{
-    ChordNode * c = (ChordNode *)thread_arguments;
-    while(1) {
-        if(c->predecessor != NULL) {
-            ulli predId = (c->predecessor->getNodeIdentifier());
-
-        for (auto it = (*c->hashTable).begin(); it != (*c->hashTable).end(); ) 
-        {
-            if(it->first <= predId)
-            {
-                // send it to pred
-                int socket_fd; struct sockaddr_in server_details;
-                bzero((char *) &server_details, sizeof(server_details));
-                server_details.sin_family = AF_INET;
-                server_details.sin_port = htons(c->predecessor->getPortNumber());
-                server_details.sin_addr.s_addr = inet_addr(c->predecessor->getIPAddress().c_str());
-
-                do {
-                        socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-                        if (socket_fd == -1) perror("Error opening socket");
-                } while (socket_fd == -1);
-
-                cout << "Redistributing key with key id " << it->first << "\n";
-
-                if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error 7 connecting with peer"); pthread_exit(NULL); }
-                
-                string keyValToSend = "insert_key_final " + it->first + it->second;
-                sendData((char *)keyValToSend.c_str(), keyValToSend.size(), socket_fd);
-                close(socket_fd);
-
-                //remove kv from my hash table
-
-                (*c->hashTable).erase(it->first);
-
-            }
-            else {
-                ++it;
->>>>>>> 58f1441e85798803e3689cb6347dd54acb2e7335
             }
         }
 
         sleep(45);
-<<<<<<< HEAD
-=======
-
-        }        
->>>>>>> 58f1441e85798803e3689cb6347dd54acb2e7335
     }
     pthread_exit(NULL);
 }
