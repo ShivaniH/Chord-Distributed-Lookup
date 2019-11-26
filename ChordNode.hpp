@@ -102,6 +102,9 @@ public:
     // Fixing the finger table
     void fixFingers(FingerTableEntry * fte);
 
+    // Make the key value pair insert in the chord ring. Key = node identifier and value = ip address
+    void insertKey(FingerTableEntry * fte);
+
     void stabilize();
 
     void notify(std::string nodeID);

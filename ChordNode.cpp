@@ -240,6 +240,34 @@ void ChordNode::fixFingers(FingerTableEntry * fte) {
     }
 }
 
+void ChordNode::insertKey(FingerTableEntry * fte) {
+    // Make the key value pair insert in the chord ring. Key = node identifier and value = ip address
+    pair<FingerTableEntry *, bool> result = this->findSuccessor(fte->getNodeIdentifier());
+    
+    int socket_fd; struct sockaddr_in server_details;
+    do{
+		socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+		if (socket_fd == -1) perror("Error opening socket");
+	} while (socket_fd == -1);
+
+    bzero((char *) &server_details, sizeof(server_details));
+	server_details.sin_family = AF_INET;
+    server_details.sin_port = htons(result.first->getPortNumber());
+    server_details.sin_addr.s_addr = inet_addr(result.first->getIPAddress().c_str());
+
+    string command;
+
+    if(result.second) {
+        command = "insert_key_final " + to_string(fte->getNodeIdentifier()) + " " + fte->getIPAddress();
+    } else {
+        command = "insert_key " + to_string(fte->getNodeIdentifier()) + " " + fte->getIPAddress();
+    }
+
+    if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer 3"); pthread_exit(NULL); }
+    sendData((char *)command.c_str(), command.size(), socket_fd);
+    close(socket_fd);
+}
+
 void ChordNode::stabilize()
 {
 
@@ -298,6 +326,12 @@ void* interpretCommand(void* thread_arguments) {
             c->fixFingers(new FingerTableEntry(result[1], stoi(result[2]), stoull(result[3])));
             cout << "FingerTable updated successfully using IP Address = " << result[1] << ", Port Number = " << result[2] << " and Node Identifier = " << result[3] << "\n";
         }
+    } else if (result[0] == "insert_key") {
+        if(result.size() != 3) { perror("Error the required parameters are insert_key <key identifier> <key value>\n"); exit(0); }
+        c->insertKey(new FingerTableEntry(result[2], -1, stoull(result[1])));
+    } else if (result[0] == "insert_key_final") {
+        if(result.size() != 3) { perror("Error the required parameters are insert_key_final <key identifier> <key value>\n"); exit(0); }
+        (*c->hashTable)[stoull(result[1])] = result[2];
     } else {
         cout << "Invalid command received at the server end\n";
     }
@@ -335,7 +369,9 @@ void* startListeningPort(void* thread_arguments) {
         long long int receiver_size;
         string command(receiveData(receiver_size, data_transfer_fd));
 
-        cout << "Command Received: " << command << "\n";
+        if(command.find("fix_fingers") == string::npos) {
+            cout << "Command Received: " << command << "\n";
+        }
 
         pthread_t interpret_command_thread;
         struct thread_arguments_structure * send_chunk_thread_arg = (struct thread_arguments_structure *)malloc(sizeof(struct thread_arguments_structure));
@@ -360,7 +396,7 @@ void* fixFingersThread(void* thread_arguments) {
             server_details.sin_port = htons(c->successorList->at(0)->getPortNumber());
             server_details.sin_addr.s_addr = inet_addr(c->successorList->at(0)->getIPAddress().c_str());
 
-            cout << "Successor Details: " << c->successorList->at(0)->getIPAddress() << " " << c->successorList->at(0)->getPortNumber() << " " << c->successorList->at(0)->getNodeIdentifier() << "\n";
+            // cout << "Successor Details: " << c->successorList->at(0)->getIPAddress() << " " << c->successorList->at(0)->getPortNumber() << " " << c->successorList->at(0)->getNodeIdentifier() << "\n";
 
             do {
                 socket_fd = socket(AF_INET, SOCK_STREAM, 0);
