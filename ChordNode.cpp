@@ -151,7 +151,7 @@ void ChordNode::join(FingerTableEntry * fte) {
         server_details2.sin_port = htons(fte->getPortNumber());
         server_details2.sin_addr.s_addr = inet_addr(fte->getIPAddress().c_str());
 
-        if(connect(socket_fd2, (struct sockaddr *)&server_details2, sizeof(server_details2)) == -1) { perror("Error connecting with peer 2"); pthread_exit(NULL); }
+        if(connect(socket_fd2, (struct sockaddr *)&server_details2, sizeof(server_details2)) == -1) { perror("Error 2 connecting with peer"); pthread_exit(NULL); }
         string command2 = "change_successor " + result.first->getIPAddress() + " " + to_string(result.first->getPortNumber()) + " " + to_string(result.first->getNodeIdentifier());
         sendData((char *)command2.c_str(), command2.size(), socket_fd2);
 
@@ -162,7 +162,7 @@ void ChordNode::join(FingerTableEntry * fte) {
             if (socket_fd2 == -1) perror("Error opening socket");
         } while (socket_fd2 == -1);
 
-        if(connect(socket_fd2, (struct sockaddr *)&server_details2, sizeof(server_details2)) == -1) { perror("Error connecting with peer 1"); pthread_exit(NULL); }
+        if(connect(socket_fd2, (struct sockaddr *)&server_details2, sizeof(server_details2)) == -1) { perror("Error 1 connecting with peer"); pthread_exit(NULL); }
         command2 = "change_predecessor " + this->ipAddress + " " + to_string(this->portNumber) + " " + to_string(*this->nodeIdentifier);
         sendData((char *)command2.c_str(), command2.size(), socket_fd2);
 
@@ -176,7 +176,7 @@ void ChordNode::join(FingerTableEntry * fte) {
         command = "join_chord " + fte->getIPAddress() + " " + to_string(fte->getPortNumber()) + " " + to_string(fte->getNodeIdentifier());
     }
 
-    if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer 3"); pthread_exit(NULL); }
+    if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error 3 connecting with peer"); pthread_exit(NULL); }
     sendData((char *)command.c_str(), command.size(), socket_fd);
     close(socket_fd);
 }
@@ -263,7 +263,35 @@ void ChordNode::insertKey(FingerTableEntry * fte) {
         command = "insert_key " + to_string(fte->getNodeIdentifier()) + " " + fte->getIPAddress();
     }
 
-    if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer 3"); pthread_exit(NULL); }
+    if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error 3 connecting with peer"); pthread_exit(NULL); }
+    sendData((char *)command.c_str(), command.size(), socket_fd);
+    close(socket_fd);
+}
+
+void ChordNode::searchKey(FingerTableEntry * fte) {
+    // Search for the value for a particular key in the chord ring. Key = node identifier, ip address = ip address of the requested host and port number = port number of the requested host
+    pair<FingerTableEntry *, bool> result = this->findSuccessor(fte->getNodeIdentifier());
+    
+    int socket_fd; struct sockaddr_in server_details;
+    do{
+		socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+		if (socket_fd == -1) perror("Error opening socket");
+	} while (socket_fd == -1);
+
+    bzero((char *) &server_details, sizeof(server_details));
+	server_details.sin_family = AF_INET;
+    server_details.sin_port = htons(result.first->getPortNumber());
+    server_details.sin_addr.s_addr = inet_addr(result.first->getIPAddress().c_str());
+
+    string command;
+
+    if(result.second) {
+        command = "search_key_final " + to_string(fte->getNodeIdentifier()) + " " + fte->getIPAddress() + " " + to_string(fte->getPortNumber());
+    } else {
+        command = "search_key " + to_string(fte->getNodeIdentifier()) + " " + fte->getIPAddress() + " " + to_string(fte->getPortNumber());
+    }
+
+    if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error 3 connecting with peer"); pthread_exit(NULL); }
     sendData((char *)command.c_str(), command.size(), socket_fd);
     close(socket_fd);
 }
@@ -319,7 +347,7 @@ void* interpretCommand(void* thread_arguments) {
             server_details.sin_port = htons(c->successorList->at(0)->getPortNumber());
             server_details.sin_addr.s_addr = inet_addr(c->successorList->at(0)->getIPAddress().c_str());
 
-            if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer 4"); pthread_exit(NULL); }
+            if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error 4 connecting with peer"); pthread_exit(NULL); }
             sendData((char *)command.c_str(), command.size(), socket_fd);
             close(socket_fd);
 
@@ -332,6 +360,40 @@ void* interpretCommand(void* thread_arguments) {
     } else if (result[0] == "insert_key_final") {
         if(result.size() != 3) { perror("Error the required parameters are insert_key_final <key identifier> <key value>\n"); exit(0); }
         (*c->hashTable)[stoull(result[1])] = result[2];
+    } else if (result[0] == "search_key") {
+        if(result.size() != 4) { perror("Error the required parameters are search_key <key identifier> <ip address> <port number>\n"); exit(0); }
+        c->searchKey(new FingerTableEntry(result[2], stoi(result[3]), stoull(result[1])));
+    } else if (result[0] == "search_key_final") {
+        if(result.size() != 4) { perror("Error the required parameters are search_key_final <key identifier> <ip address> <port number>\n"); exit(0); }
+
+        string valueToSend = "result_value " + result[1] + " ";
+        if((*c->hashTable).count(stoull(result[1])) == 1) {
+            valueToSend += (*c->hashTable)[stoull(result[1])];
+        } else {
+            valueToSend += "Error: try after some time as the fingers are not updated yet";
+        }
+       
+        int socket_fd; struct sockaddr_in server_details;
+        do {
+            socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+            if (socket_fd == -1) perror("Error opening socket");
+        } while (socket_fd == -1);
+
+        bzero((char *) &server_details, sizeof(server_details));
+        server_details.sin_family = AF_INET;
+        server_details.sin_port = htons(stoi(result[3]));
+        server_details.sin_addr.s_addr = inet_addr(result[2].c_str());
+
+        if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer 6"); pthread_exit(NULL); }
+        sendData((char *)valueToSend.c_str(), valueToSend.size(), socket_fd);
+        close(socket_fd);
+
+    } else if (result[0] == "result_value") {
+        if(result.size() != 3) {
+            cout << "Error: While trying to fetch the value of a key. Try after some time as the fingers are not updated yet\n";
+        } else {
+            cout << "The value for the key identifier = " << result[1] << " is = " << result[2] << "\n";
+        }
     } else {
         cout << "Invalid command received at the server end\n";
     }
@@ -403,7 +465,7 @@ void* fixFingersThread(void* thread_arguments) {
                 if (socket_fd == -1) perror("Error opening socket");
             } while (socket_fd == -1);
 
-            if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error connecting with peer 5"); pthread_exit(NULL); }
+            if(connect(socket_fd, (struct sockaddr *)&server_details, sizeof(server_details)) == -1) { perror("Error 5 connecting with peer"); pthread_exit(NULL); }
 
             sendData((char *)command.c_str(), command.size(), socket_fd);
 

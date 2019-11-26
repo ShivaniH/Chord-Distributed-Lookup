@@ -103,6 +103,22 @@ int main(int argc, char** argv) {
             cout << "Key that will be inserted is: " << key_identifier << "\n";
 
             c->insertKey(new FingerTableEntry(result[2], -1, key_identifier));
+        } else if(command.find("search_key") != string::npos) {
+            vector<string> result;
+            boost::split(result, command, boost::is_any_of(" "));
+
+            if(c->predecessor == NULL) {
+                cout << "You are not a part of any chord ring\n";
+                continue;
+            }
+
+            if(result.size() != 2) { perror("Error the required parameters are search_key <key>\n"); continue; }
+            
+            ulli key_identifier = calculateIdentifier(result[1]);
+
+            cout << "Finding the value for the key identifier = " << key_identifier << "\n";
+
+            c->searchKey(new FingerTableEntry(c->ipAddress, c->portNumber, key_identifier));
         } else {
             cout << "Invalid command\n";
         }
